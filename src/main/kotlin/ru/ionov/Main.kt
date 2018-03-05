@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType
 
 const val GITHUB_URL = "https://github.com"
 const val AUTH_URL = "/login/oauth/authorize"
-const val AUTH_CALLBACK_URL = "/login/github"
+const val AUTH_CALLBACK_URL = "/login"
 const val TOKEN_URL = "/login/oauth/access_token"
 
 val client = ClientBuilder.newClient()!!
@@ -61,7 +61,14 @@ fun main(args: Array<String>) {
 }
 
 fun getAbsolutePath(request: Request, url: String): String {
-    return request.scheme() + "://" + request.host() + url
+    var scheme = request.scheme()
+    var context = ""
+    val nginxContext = request.headers("NginX-Context")
+    if (nginxContext != null && nginxContext.isNotBlank()) {
+        scheme = "https"
+        context = nginxContext
+    }
+    return scheme + "://" + request.host() + context + url
 }
 
 fun mapToQueryParams(map: Map<String, Array<String>>?): String {
